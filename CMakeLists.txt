@@ -63,6 +63,7 @@ catkin_python_setup()
    get_kinectdata.srv
    image.srv
    angle_action.srv
+   tactile.srv
  )
 
 ## Generate actions in the 'action' folder
