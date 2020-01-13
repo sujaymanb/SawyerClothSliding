@@ -1,5 +1,7 @@
 # Sawyer Control
-## Authors:
+## Fork:
+Sujay Bajracharya.  Changes for the sliding project.  Created environment for sliding experiements.
+## Original Authors:
 Murtaza Dalal and Shikhar Bahl 
 ## Description
 Sawyer Control is a repository that enables RL algorithms to control Rethink Sawyer robots via an OpenAI Gym Style interface. It is both a ROS package and a set of Sawyer (Gym) Envs combined in one. The ROS portion of the repo handles the actual control of the robot and is executed in Python 2. The environments are all in Python 3, and communicate to the robot via the ROS interface. Currently, this repo is capable of utilizing both the state information of the robot as well as visual input from a Microsoft Kinect sensor. 
