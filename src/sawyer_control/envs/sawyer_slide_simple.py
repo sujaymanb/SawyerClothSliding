@@ -37,7 +37,7 @@ class SawyerSlideEnv(SawyerEnvBase):
 
 
     def _set_action_space(self):
-        # x, y, z, finger_pos
+        # finger_pos
         low = 0
         high = 1
         self.action_space = BSox(low, high, dtype=np.float32)
@@ -69,17 +69,22 @@ class SawyerSlideEnv(SawyerEnvBase):
         force, tactile = self.tactile()
         return np.array(force), np.array(tactile)
 
-    def check_fail(self, obs):
+    def check_fail(self, obs, condition="force"):
     	# check if force within the safe range
 
     	force_obs, tactile_obs = obs
 
-    	# TODO: check the given force params
-    	force_obs = np.array(force_obs)
-    	result = (force_obs >= self.force_lower) * (force_obs <= self.force_upper)
-    	if result.prod() == 1:
-    		return True
-    	
+    	if condition="force":
+	    	# TODO: check the given force params
+	    	force_obs = np.array(force_obs)
+	    	result = (force_obs >= self.force_lower) * (force_obs <= self.force_upper)
+	    	if result.prod() == 1:
+	    		return True
+	   	elif condition="tactile":
+	   		# this value can be set to something else if needed
+	   		if tactile_obs.sum <= 0:
+	   			return True
+
     	return False
 
     def step(self, action):
@@ -110,6 +115,7 @@ class SawyerSlideEnv(SawyerEnvBase):
             self.open_gripper()
             for _ in range(5):
                 self._position_act(self.pos_control_reset_position - self._get_endeffector_pose())
+			self.close_gripper()                
 
     def open_gripper():
         self.set_gripper_pos(50.0)
