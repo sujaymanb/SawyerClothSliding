@@ -21,7 +21,7 @@ class SawyerEnvBase(gym.Env, Serializable, MultitaskEnv, metaclass=abc.ABCMeta):
             self,
             action_mode='torque',
             use_safety_box=True,
-            torque_action_scale=1,
+            torque_action_scale=5,
             position_action_scale=1/10,
             config_name = 'base_config',
             fix_goal=False,
@@ -384,7 +384,7 @@ class SawyerEnvBase(gym.Env, Serializable, MultitaskEnv, metaclass=abc.ABCMeta):
             execute_action(angles, duration)
             return None
         except rospy.ServiceException as e:
-            pass
+            print(e)
 
     def request_ik_angles(self, ee_pos, joint_angles):
         rospy.wait_for_service('ik')
@@ -396,7 +396,7 @@ class SawyerEnvBase(gym.Env, Serializable, MultitaskEnv, metaclass=abc.ABCMeta):
                 resp.joint_angles
             )
         except rospy.ServiceException as e:
-            pass
+            print(e)
 
     """
     Multitask functions
