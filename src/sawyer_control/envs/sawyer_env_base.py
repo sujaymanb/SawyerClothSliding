@@ -377,7 +377,7 @@ class SawyerEnvBase(gym.Env, Serializable, MultitaskEnv, metaclass=abc.ABCMeta):
 
     def request_angle_action(self, angles, pos):
         dist = np.linalg.norm(self._get_endeffector_pose() - pos[:3])
-        duration = dist/self.max_speed
+        duration = dist/self.max_speed + (dist*0.1)
         rospy.wait_for_service('angle_action')
         try:
             execute_action = rospy.ServiceProxy('angle_action', angle_action, persistent=True)
@@ -440,7 +440,7 @@ class SawyerEnvBase(gym.Env, Serializable, MultitaskEnv, metaclass=abc.ABCMeta):
 
     def set_env_state(self, env_state):
         angles, ee_pos = env_state
-        for _ in range(3):
+        for _ in range(5):
             self.send_angle_action(angles, ee_pos)
 
     def initialize_camera(self, init_fctn):
