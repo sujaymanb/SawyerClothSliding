@@ -32,12 +32,12 @@ def handle_request(req):
 	return (data_force, data_left)
 
 def tactile_server():
+	rospy.Subscriber('/wsg_50_driver/left_finger_dsa_array', fingerDSAdata, left_finger_callback)
+	rospy.Subscriber('/robot/limb/right/endpoint_state', EndpointState, endpoint_callback)
 	rospy.init_node('tactile_server')
 	s = rospy.Service('tactile_service', tactile, handle_request)
 	print("Tactile Server Active")
 	rospy.spin()
 
 if __name__ == '__main__':
-	rospy.Subscriber('/wsg_50_driver/left_finger_dsa_array', fingerDSAdata, left_finger_callback)
-	rospy.Subscriber('/robot/limb/right/endpoint_state', EndpointState, endpoint_callback)
 	tactile_server()
