@@ -64,6 +64,7 @@ catkin_python_setup()
    image.srv
    angle_action.srv
    tactile.srv
+   angle_conv.srv
  )
 
 ## Generate actions in the 'action' folder
