@@ -4,6 +4,7 @@ from sawyer_control.envs.sawyer_env_base import SawyerEnvBase
 from sawyer_control.core.serializable import Serializable
 from wsg_50_common.srv import Move
 from sawyer_control.srv import tactile
+from sawyer_control.srv import angle_conv
 import numpy as np
 import cv2
 import rospy
@@ -28,7 +29,9 @@ class SawyerSlideEnv(SawyerEnvBase):
 							**kwargs)
 		self.tactile = rospy.ServiceProxy('tactile_service', tactile, persistent=False)
 		self.gripper_pos = rospy.ServiceProxy('/wsg_50_driver/move', Move, persistent=False)
+		self.get_orient_action = rospy.ServiceProxy('angle_conv', angle_conv, persistent=False)
 		self.gripper_pos_scale = 10
+		self.angle_scale = 30 # 30 degrees
 
 		# TODO: tune these upper and lower thresholds
 		self.force_lower = np.array([0, 0, 0])
@@ -39,7 +42,7 @@ class SawyerSlideEnv(SawyerEnvBase):
 		self.start_pose = (np.array([-0.34070215,  0.07658594, -2.06358695,  0.62326658, -1.08047271,-1.6632061 , -3.86261129]), np.array([ 0.70886695, -0.30748498,  0.37799653]))
 		self.goal_dir = fixed_goal
 
-		self.z = 0.3774128
+		self.y = 0.07658594
 		self.previous_pose = self._get_endeffector_pose()[:3]
 		self.ep_steps = 0
 		self._max_episode_steps=max_episode_steps
@@ -47,44 +50,63 @@ class SawyerSlideEnv(SawyerEnvBase):
 		test = self.get_env_state()
 
 		_,_,eepos = self.request_observation()
-		print(eepos)
-		print(test)
+		print("Init ee_pose",eepos)
+		print("Init state",test)
 		if init_pos:
 			self.init_pos()
 
 
 	def _set_observation_space(self):
-		# Tuple of (end eff force, tactile sensor readings array)
+		# (x,y,z) force readings
 		# 14 x 6 tactile sensor reading (maybe need to double for both fingers??)
-		# TODO: make the force reading bounds correct
-		#self.observation_space = Tuple((Box(low=-np.inf, high=np.inf, shape=(3,), dtype=np.float64), 
-		#								Box(low=0, high=3895, shape=(84,), dtype=np.int64)))
 		self.observation_space = Box(low=0., high=1., shape=(87,), dtype=np.float32)
 
 	def _set_action_space(self):
 		# (gripper_pos, pos (x,y,z), orientation(x,y,z,w))
-		self.action_space = Box(low=-1, high=1, shape=(8,), dtype=np.float64)
+		#self.action_space = Box(low=-1, high=1, shape=(8,), dtype=np.float64)
+		# gripper_pos, pos (x,z), ee_angle
+		self.action_space = Box(low=-1, high=1, shape=(4,), dtype=np.float64)
 
 
 	def _act(self, action):
 		if self.action_mode == 'position':
 			#angles,_,pose = self.request_observation()
 			print("Action",action)
-			self.set_gripper_pos((action + 1) * self.gripper_pos_scale * 0.5)
-			self._position_act(np.array(action[1:4])*self.position_action_scale,
-										 action[4:])
+			self.set_gripper_pos((action[0] + 1) * self.gripper_pos_scale * 0.5)
+			delta_pos = np.array([action[0],0,action[1]])
+			self._position_act(delta_pos*self.position_action_scale,action[3]*self.angle_scale)
 
-	def _position_act(self, action, orientation):
-		ee_pos = self._get_endeffector_pose()
+
+	def _position_act(self, action, angle):
+		#ee_pos = self._get_endeffector_pose()
+		_,_,ee_pos = self.request_observation()
 		endeffector_pos = ee_pos[:3]
+		orientation = ee_pos[3:]
 		self.previous_pose = endeffector_pos
-		endeffector_pos[2] = self.z # fix z
+
+		angle = np.deg2rad(angle)
+		print("angle action",angle)
+		print("orientation",orientation)
+		orientation = self.orient_action(orientation,angle)
+
 		target_ee_pos = (endeffector_pos + action)
 		target_ee_pos = np.clip(target_ee_pos, self.config.POSITION_SAFETY_BOX_LOWS, self.config.POSITION_SAFETY_BOX_HIGHS)
+
 		#orientation = (0.73276788, -0.68028504, 0.00153471, 0.01616033)
 		target_ee_pos = np.concatenate((target_ee_pos, orientation))
 		angles = self.request_ik_angles(target_ee_pos, self._get_joint_angles())
 		self.send_angle_action(angles, target_ee_pos)
+
+
+	def orient_action(self, current, angle_action):
+		#if angle_action == 0.0:
+	#		return current
+		rospy.wait_for_service('angle_conv')
+		try:
+			resp = self.get_orient_action(current,angle_action)
+			return resp.orientation
+		except rospy.ServiceException as e:
+			print(e)
 
 
 	def _get_obs(self):
@@ -192,7 +214,8 @@ class SawyerSlideEnv(SawyerEnvBase):
 		# TODO
 		self.set_gripper_pos(30)
 		# reset sequence
-		self._position_act([0.,0.,0.15])
+		#orientation = (0.73276788, -0.68028504, 0.00153471, 0.01616033)
+		self._position_act([0.,0.,0.15],0.)
 		# neutral position
 		self.set_env_state((np.array([ 1.90388665e-01, -1.24960935e+00,  4.02050791e-03,  2.18924403e+00,-2.76762199e+00, -7.03871071e-01, -4.71395683e+00]), np.array([0.40441269, 0.00732501, 0.21100701])))
 		# waypoints
@@ -200,8 +223,8 @@ class SawyerSlideEnv(SawyerEnvBase):
 		self.set_env_state((np.array([-0.31150195, -0.17038867, -1.33267188,  0.34953126, -1.81241894,-1.62664163, -3.52767372]), np.array([ 0.71536082, -0.33902037,  0.43457955])))
 		self.set_env_state((np.array([-0.44062597,  0.05572754, -2.42613864,  0.65962112, -0.77937597, -1.84109282, -3.87047267]), np.array([ 0.71509212, -0.3027451 ,  0.43312734])))
 		for _ in range(5):
-			self._position_act([ 0.7275, -0.3027451 ,  0.5] - self._get_endeffector_pose())
-		self._position_act([0.,0.,-0.10])
+			self._position_act([ 0.7275, -0.3027451 ,  0.5] - self._get_endeffector_pose(),0.)
+		self._position_act([0.,0.,-0.10],0.)
 		self.set_gripper_pos(0)                
 	
 	def set_gripper_pos(self, pos):
