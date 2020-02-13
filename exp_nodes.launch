@@ -7,4 +7,5 @@
     <node pkg="sawyer_control" type="angle_action_server.py" name="angle_action" />
     <node pkg="sawyer_control" type="ik_server.py" name="ik_server" />
     <node pkg="sawyer_control" type="angle_conv_server.py" name="angle_conv" output="screen" />
+    <node pkg="sawyer_control" type="motion_planning_server.py" name="motion_planning" output="screen" />
 </launch>
