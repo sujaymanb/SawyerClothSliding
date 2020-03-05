@@ -1,11 +1,45 @@
 <?xml version="1.0" encoding="utf-8"?>
 <launch>
+	<!--EXP nodes stuff-->
     <node pkg="sawyer_control" type="actions_subscriber.py" name="actions"/>
-    <node pkg="sawyer_control" type="observations_server.py" name="observations" />
+    <node pkg="sawyer_control" type="observations_server.py" name="observations" output="screen"/>
     <node pkg="sawyer_control" type="jacobian_server.py" name="jacobians" />
     <node pkg="sawyer_control" type="image_server.py" name="images" />
     <node pkg="sawyer_control" type="angle_action_server.py" name="angle_action" />
     <node pkg="sawyer_control" type="ik_server.py" name="ik_server" />
     <node pkg="sawyer_control" type="angle_conv_server.py" name="angle_conv" output="screen" />
-    <node pkg="sawyer_control" type="motion_planning_server.py" name="motion_planning" output="screen" />
+    <node pkg="sawyer_control" type="tactile_service.py" name="tactile_server" output="screen" />
+    <node pkg="sawyer_control" type="endpoint_pose_server.py" name="endpoint_pose_server" output="screen" />
+    <node pkg="sawyer_control" type="tip_pose_server.py" name="tip_pose_server" output="screen" />
+
+    <!-- Static transform publisher for end_effector tip -->
+    <node pkg="tf" type="static_transform_publisher" name="tip_broadcaster" args="0 0 0.13 0 0 0 right_hand gripper_tip 100" />
+
+    <!--<node pkg="sawyer_control" type="motion_planning_server.py" name="motion_planning" output="screen" />-->
+
+    <!-- WSG driver -->
+    <node name="wsg_50_driver"  pkg="wsg_50_driver" type="wsg_50_ip" output="screen">
+		<param name="ip" type="string" value="192.168.1.20"/>
+		<param name="port" type="int" value="1000"/>
+  	</node>
+
+	<!-- Load the URDF, SRDF and other .yaml configuration files on the param server -->
+	<include file="$(find sawyer_wsg_moveit)/launch/planning_context.launch">
+		<arg name="load_robot_description" value="true"/>
+	</include>
+
+	<!--Joint state publisher -->
+	<!--<remap from="joint_states" to="robot/joint_states"/>-->
+	<node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher">
+		<rosparam param="source_list">["wsg_50_driver/joint_states","robot/joint_states"]</rosparam>
+		<rosparam param="rate">1000</rosparam>
+	</node>
+
+	<!-- joint state republisher -->
+	<node pkg="sawyer_manip" type="joint_state_republisher.py" name="joint_state_repub" output="screen" />
+
+	<!--Robot State publisher -->
+	<node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" respawn="true" output="screen" />
+
+
 </launch>

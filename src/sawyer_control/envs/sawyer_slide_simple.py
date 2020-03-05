@@ -195,10 +195,12 @@ class SawyerSlideEnv(SawyerEnvBase):
 		self._position_act([0.,0.,0.15])
 		# neutral position
 		self.set_env_state((np.array([ 1.90388665e-01, -1.24960935e+00,  4.02050791e-03,  2.18924403e+00,-2.76762199e+00, -7.03871071e-01, -4.71395683e+00]), np.array([0.40441269, 0.00732501, 0.21100701])))
+		print("at neutral")
 		# waypoints
 		self.set_env_state((np.array([-0.07711425, -1.26722658, -0.61522853,  1.59733498, -2.93815041, -1.1669482 , -4.71084547]), np.array([ 0.32760957, -0.3180328 ,  0.48175633])))
+		print("at pt1")
 		self.set_env_state((np.array([-0.31150195, -0.17038867, -1.33267188,  0.34953126, -1.81241894,-1.62664163, -3.52767372]), np.array([ 0.71536082, -0.33902037,  0.43457955])))
-		self.set_env_state((np.array([-0.44062597,  0.05572754, -2.42613864,  0.65962112, -0.77937597, -1.84109282, -3.87047267]), np.array([ 0.71509212, -0.3027451 ,  0.43312734])))
+		print("at pt2")
 		for _ in range(5):
 			self._position_act([ 0.7275, -0.3027451 ,  0.5] - self._get_endeffector_pose())
 		self._position_act([0.,0.,-0.10])

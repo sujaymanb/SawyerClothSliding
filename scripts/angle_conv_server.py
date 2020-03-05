@@ -12,6 +12,9 @@ def get_orient(msg):
     r,p,y = tf.transformations.euler_from_quaternion(current)
     print('rpy',r,p,y)
     p += action
+    # limit within fixed range (30 deg +/- of vertically down)
+    p = np.clip(p,-0.54783780694,0.49936019306)
+
     orientation = tf.transformations.quaternion_from_euler(r,p,y)
     print('ori',orientation)
     return {'orientation':orientation}
