@@ -40,8 +40,8 @@ class SawyerSlideEnv(SawyerEnvBase):
 		self.force_threshold = 15.0
 		self.tactile_threshold = 40/3895
 
-		#self.start_pose = (np.array([-0.43414941,  0.13141015, -2.12870908,  0.82492185, -1.03358006,-1.78622067, -4.10877037]), np.array([ 0.61517406, -0.36645856,  0.38250881]))
-		self.start_pose = (np.array([-0.40968263,  0.06017188, -1.89665329,  0.72006935, -1.22444236,-1.69499218, -4.01992989]), np.array([ 0.61895293, -0.38413632,  0.37347302]))
+		#self.start_pose = (np.array([-0.40968263,  0.06017188, -1.89665329,  0.72006935, -1.22444236,-1.69499218, -4.01992989]), np.array([ 0.61895293, -0.38413632,  0.37347302]))
+		self.start_pose = (np.array([-0.39395702,  0.08154394, -1.79615045,  0.91780859, -1.33018267,-1.69333982, -4.21501446]), np.array([ 0.52982676, -0.39510188,  0.35705885]))
 
 		self.goal_dir = fixed_goal
 
@@ -52,16 +52,17 @@ class SawyerSlideEnv(SawyerEnvBase):
 		self.ep_steps = 0
 		self._max_episode_steps=max_episode_steps
 
-		test = self.get_env_state()
-
+		# debug print
 		#prev_t = rospy.Time.now()
 		#while True:
 		#	_,_,eepos = self.request_observation()
+		#	eepos = self.get_tip_pose()
+		#	eepos = self.get_env_state()
 		#	print(eepos)
 		#	curr_t = rospy.Time.now()
 		#	print(curr_t-prev_t)
 		#	prev_t = curr_t
-		print(test)
+
 		if init_pos:
 			self.init_pos()
 
@@ -82,8 +83,8 @@ class SawyerSlideEnv(SawyerEnvBase):
 			#self.set_gripper_pos((action[0] + 1) * self.gripper_pos_scale * 0.5)
 			#fix gripper
 			self.set_gripper_pos(2.4)
-			self._position_act(np.array([0., np.absolute(action[1]*self.position_action_scale), action[2]*self.position_action_scale, action[3]*self.angle_scale]))
-			#self._position_act(np.array([0.,1*self.position_action_scale,0.,0.]))
+			#self._position_act(np.array([0., np.absolute(action[1]*self.position_action_scale), action[2]*self.position_action_scale, action[3]*self.angle_scale]))
+			self._position_act(np.array([0., (action[1]+1)*0.5*self.position_action_scale, action[2]*self.position_action_scale, action[3]*self.angle_scale]))
 
 	def _position_act(self, action):
 		ee_pos = self.get_tip_pose()
@@ -228,12 +229,11 @@ class SawyerSlideEnv(SawyerEnvBase):
 				d = (current_pose[1] - self.previous_pose[1])
 				return d
 
-	# not sure why this is needed
+	# not used
 	def set_to_goal(self, goal):
 		return
 
 
-	# TODO: test custom ROS functions
 	def _reset_robot(self):
 		if not self.reset_free:
 			print("resetting")
@@ -243,8 +243,9 @@ class SawyerSlideEnv(SawyerEnvBase):
 			self._position_act([0.,0.,0.40-z,0.])
 			for _ in range(2):
 				self.set_env_state((np.array([-0.40176561, -0.0182959 , -2.02688861,  0.76752341, -1.21615326,-1.84398437, -4.11705875]), np.array([ 0.59614933, -0.34725615,  0.46249017])))
-			self.set_env_state(self.start_pose)
-			self._position_act([0.,0.,-0.02,0.])
+			for _ in range(2):
+				self.set_env_state(self.start_pose)
+			#self._position_act([0.,0.,-0.02,0.])
 			self.set_gripper_pos(0)
 
 	def init_pos(self):
@@ -259,7 +260,7 @@ class SawyerSlideEnv(SawyerEnvBase):
 		self.set_env_state((np.array([-0.07711425, -1.26722658, -0.61522853,  1.59733498, -2.93815041, -1.1669482 , -4.71084547]), np.array([ 0.32760957, -0.3180328 ,  0.48175633])))
 		print("at pt1")
 		for _ in range(2):
-			self.set_env_state((np.array([-0.40176561, -0.0182959 , -2.02688861,  0.76752341, -1.21615326,-1.84398437, -4.11705875]), np.array([ 0.59614933, -0.34725615,  0.46249017])))
+			self.set_env_state((np.array([-0.42582616, -0.20270801, -1.84254885,  0.74962986, -1.43295407,-1.86295116, -4.19389248]), np.array([ 0.5272882 , -0.37081248,  0.5404008 ])))
 		print("at pt2")
 		#self._position_act([0.,0.,-0.10,0.])
 		self.set_gripper_pos(0)                
