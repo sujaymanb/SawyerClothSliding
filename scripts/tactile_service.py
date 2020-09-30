@@ -22,14 +22,11 @@ def endpoint_callback(msg):
 	force_buffer.append(np.array((msg.wrench.force.x, msg.wrench.force.y, msg.wrench.force.z)))
 
 def handle_request(req):
-	print("Getting obs")
-	print("force_buffer_size:%d"%(len(force_buffer)))
+	#print("Getting obs")
+	#print("force_buffer_size:%d"%(len(force_buffer)))
 	data_force = np.array([force_buffer[i] for i in range(10)])
-	print(data_force)
-	#finger = np.array([finger_buffer[i] for i in range(10)])
-	#data_force = np.mean(data_force, axis=0)
+	#print(data_force)
 	data_force = np.median(data_force, axis=0)
-	#finger = np.mean(finger, axis=0)
 	finger = np.array(finger_buffer)
 	return (data_force, finger)
 

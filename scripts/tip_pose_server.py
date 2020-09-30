@@ -9,13 +9,12 @@ def get_tip_pose(unused):
 	try:
 		t = tf_lis.getLatestCommonTime("base", "gripper_tip")
 		pos, orientation = tf_lis.lookupTransform("base", "gripper_tip", t)
-		#print "gripper_tip pose", pos, orientation
 		tip_pose = pos + orientation
+		return {'tip_pose':tip_pose}
 	except Exception as e:
 		print("could not get tip pose")
 		pass
-
-	return {'tip_pose':tip_pose}
+	
 
 def tip_pose_server():
 	rospy.init_node('tip_pose_server', anonymous=True)

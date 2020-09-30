@@ -67,6 +67,8 @@ catkin_python_setup()
    angle_conv.srv
    move_to_pose.srv
    move_to_angle.srv
+   endpoint_pose.srv
+   tip_pose.srv
  )
 
 ## Generate actions in the 'action' folder

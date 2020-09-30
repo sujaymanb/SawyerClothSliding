@@ -2,18 +2,18 @@
 <launch>
 	<!--EXP nodes stuff-->
     <node pkg="sawyer_control" type="actions_subscriber.py" name="actions"/>
-    <node pkg="sawyer_control" type="observations_server.py" name="observations" output="screen"/>
+    <node pkg="sawyer_control" type="observations_server.py" name="observations"/>
     <node pkg="sawyer_control" type="jacobian_server.py" name="jacobians" />
     <node pkg="sawyer_control" type="image_server.py" name="images" />
     <node pkg="sawyer_control" type="angle_action_server.py" name="angle_action" />
     <node pkg="sawyer_control" type="ik_server.py" name="ik_server" />
-    <node pkg="sawyer_control" type="angle_conv_server.py" name="angle_conv" output="screen" />
-    <node pkg="sawyer_control" type="tactile_service.py" name="tactile_server" output="screen" />
-    <node pkg="sawyer_control" type="endpoint_pose_server.py" name="endpoint_pose_server" output="screen" />
+    <node pkg="sawyer_control" type="angle_conv_server.py" name="angle_conv" output="screen"  />
+    <node pkg="sawyer_control" type="tactile_service.py" name="tactile_server" output="screen"/>
+    <node pkg="sawyer_control" type="endpoint_pose_server.py" name="endpoint_pose_server" />
     <node pkg="sawyer_control" type="tip_pose_server.py" name="tip_pose_server" output="screen" />
 
-    <!-- Static transform publisher for end_effector tip -->
-    <node pkg="tf" type="static_transform_publisher" name="tip_broadcaster" args="0 0 0.13 0 0 0 right_hand gripper_tip 100" />
+    <!-- Static transform publisher for end_effector tip: default 0.13 -->
+    <node pkg="tf" type="static_transform_publisher" name="tip_broadcaster" args="0 0 0.15 0 0 0 right_hand gripper_tip 100" />
 
     <!--<node pkg="sawyer_control" type="motion_planning_server.py" name="motion_planning" output="screen" />-->
 

@@ -1,4 +1,5 @@
 float32[] current_orientation
 float32 action
+uint8 dim
 ---
 float32[] orientation

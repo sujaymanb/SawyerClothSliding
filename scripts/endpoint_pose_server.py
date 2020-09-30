@@ -1,13 +1,14 @@
 #!/usr/bin/env python
 from sawyer_control.srv import *
 import rospy
-from geometry_msgs.msg import PoseStamped 
+from geometry_msgs.msg import PoseStamped
 from tf.transformations import *
 import tf
+import numpy as np
 
 def transform(msg):
     x,y,z,qx,qy,qz,qw = msg.input_pose
-    endpoint_pose = [x,y,z,qx,qy,qz,qw]
+   # endpoint_pose = [x,y,z,qx,qy,qz,qw]
     
     endpoint_pose = []
 
@@ -30,7 +31,17 @@ def transform(msg):
         tip_frame_pose = tf_lis.transformPose('gripper_tip',base_pose)
 
         # offset to convert to right_hand frame
-        tip_frame_pose.pose.position.z -= 0.13
+        tran = np.array([0,0,-0.15,1])
+        quat = [tip_frame_pose.pose.orientation.x,
+                tip_frame_pose.pose.orientation.y,
+                tip_frame_pose.pose.orientation.z,
+                tip_frame_pose.pose.orientation.w]
+        matrix = np.array(quaternion_matrix(quat))
+        tran = np.matmul(matrix, tran)
+
+        tip_frame_pose.pose.position.x += tran[0]
+        tip_frame_pose.pose.position.y += tran[1]
+        tip_frame_pose.pose.position.z += tran[2]
 
         # convert back to base frame
         base_pose = tf_lis.transformPose('base',tip_frame_pose)
